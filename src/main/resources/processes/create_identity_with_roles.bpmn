@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0yyk90s" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.1">
+  <bpmn:process id="CreateIdentityWithRoles" name="Create identity with roles" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>SequenceFlow_0k3k1vp</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_1xp05ek" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0k3k1vp" sourceRef="StartEvent_1" targetRef="Task_07yb3l1" />
+    <bpmn:sendTask id="Task_07yb3l1" name="CMD: Create Client Identity With Roles" camunda:type="external" camunda:topic="default">
+      <bpmn:incoming>SequenceFlow_0k3k1vp</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_18xqrpz</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_03ehpqk" attachedToRef="Task_07yb3l1">
+      <bpmn:outgoing>SequenceFlow_1555u72</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_0k3s6xw" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1555u72" sourceRef="BoundaryEvent_03ehpqk" targetRef="Task_0x4dma4" />
+    <bpmn:sendTask id="Task_0x4dma4" name="EVT: Command Schema Validation Failed" camunda:type="external" camunda:topic="default">
+      <bpmn:incoming>SequenceFlow_1555u72</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0s1528u</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0s1528u" sourceRef="Task_0x4dma4" targetRef="EndEvent_1fjm3jr" />
+    <bpmn:endEvent id="EndEvent_1fjm3jr">
+      <bpmn:incoming>SequenceFlow_0s1528u</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_0ao1760" />
+    </bpmn:endEvent>
+    <bpmn:receiveTask id="Task_1f13ou4" name="EVT: Client Identity with Roles Created" messageRef="Message_11kfp8q">
+      <bpmn:incoming>SequenceFlow_18xqrpz</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1efphuc</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:endEvent id="EndEvent_1b6swln">
+      <bpmn:incoming>SequenceFlow_1efphuc</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1efphuc" sourceRef="Task_1f13ou4" targetRef="EndEvent_1b6swln" />
+    <bpmn:sequenceFlow id="SequenceFlow_18xqrpz" sourceRef="Task_07yb3l1" targetRef="Task_1f13ou4" />
+    <bpmn:textAnnotation id="TextAnnotation_1nma0u6">
+      <bpmn:text>Validation error</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_11ky1pk" sourceRef="BoundaryEvent_03ehpqk" targetRef="TextAnnotation_1nma0u6" />
+    <bpmn:textAnnotation id="TextAnnotation_08k0tom">
+      <bpmn:text>Since we know the schema for all messages that are sendable, validation of pre and post transformation payload may be performed before command is issued</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0mxb8h1" sourceRef="Task_07yb3l1" targetRef="TextAnnotation_08k0tom" />
+    <bpmn:textAnnotation id="TextAnnotation_098pxcr">
+      <bpmn:text>When the clientidentitycreated fact is generated, it is received here and payload is set to process variables</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1tu1u7n" sourceRef="StartEvent_1" targetRef="TextAnnotation_098pxcr" />
+    <bpmn:textAnnotation id="TextAnnotation_0r8ovuk">
+      <bpmn:text>This even perfoms validation on the error event. We don't need to catch failure for it since it is being generated internally. If there's a failure, an incident will be created in Camunda</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_11fue8z" sourceRef="Task_0x4dma4" targetRef="TextAnnotation_0r8ovuk" />
+    <bpmn:textAnnotation id="TextAnnotation_00164tt">
+      <bpmn:text>The end error event is functionally identical to a plain end event</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0bzkdlp" sourceRef="EndEvent_1fjm3jr" targetRef="TextAnnotation_00164tt" />
+    <bpmn:textAnnotation id="TextAnnotation_0g8nfjr">
+      <bpmn:text>Mapping of one schema to the next is part of the implentation of send tasks. Each task is configured with a map. We use the message schemas to validate config and to power UI for managing mappings.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_07829sa" sourceRef="Task_07yb3l1" targetRef="TextAnnotation_0g8nfjr" />
+    <bpmn:association id="Association_0g4o5ls" sourceRef="Task_0x4dma4" targetRef="TextAnnotation_0g8nfjr" />
+  </bpmn:process>
+  <bpmn:message id="Message_1xp05ek" name="vws.platform.ipa.authentication.clientidentity.events.clientidentitycreated" />
+  <bpmn:error id="Error_0k3s6xw" name="ValidationError" errorCode="???" />
+  <bpmn:message id="Message_11kfp8q" name="vws.platform.ipa.authorization.clientidentity.events.clientidentitywithrolescreated" />
+  <bpmn:error id="Error_0ao1760" name="SchemaValidationFailed" errorCode="???" />
+  <bpmn:error id="Error_1bfp1ym" name="boom" errorCode="1" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="CreateIdentityWithRoles">
+      <bpmndi:BPMNEdge id="SequenceFlow_18xqrpz_di" bpmnElement="SequenceFlow_18xqrpz">
+        <di:waypoint x="447" y="296" />
+        <di:waypoint x="620" y="296" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1efphuc_di" bpmnElement="SequenceFlow_1efphuc">
+        <di:waypoint x="720" y="296" />
+        <di:waypoint x="802" y="296" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0s1528u_di" bpmnElement="SequenceFlow_0s1528u">
+        <di:waypoint x="397" y="535" />
+        <di:waypoint x="397" y="594" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1555u72_di" bpmnElement="SequenceFlow_1555u72">
+        <di:waypoint x="397" y="354" />
+        <di:waypoint x="397" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0k3k1vp_di" bpmnElement="SequenceFlow_0k3k1vp">
+        <di:waypoint x="268" y="296" />
+        <di:waypoint x="347" y="296" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="StartEvent_1o58mpu_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="232" y="278" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SendTask_11u1x7f_di" bpmnElement="Task_07yb3l1">
+        <dc:Bounds x="347" y="256" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SendTask_14r66ff_di" bpmnElement="Task_0x4dma4">
+        <dc:Bounds x="347" y="455" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1n8z12b_di" bpmnElement="EndEvent_1fjm3jr">
+        <dc:Bounds x="379" y="594" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReceiveTask_0ud63w3_di" bpmnElement="Task_1f13ou4">
+        <dc:Bounds x="620" y="256" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1b6swln_di" bpmnElement="EndEvent_1b6swln">
+        <dc:Bounds x="802" y="278" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1nma0u6_di" bpmnElement="TextAnnotation_1nma0u6">
+        <dc:Bounds x="241" y="349" width="100" height="30" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_08k0tom_di" bpmnElement="TextAnnotation_08k0tom">
+        <dc:Bounds x="358" y="98" width="227" height="82" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_098pxcr_di" bpmnElement="TextAnnotation_098pxcr">
+        <dc:Bounds x="114" y="196" width="215.99343803786576" height="53.35628227194493" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0r8ovuk_di" bpmnElement="TextAnnotation_0r8ovuk">
+        <dc:Bounds x="163" y="464" width="149" height="128" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_00164tt_di" bpmnElement="TextAnnotation_00164tt">
+        <dc:Bounds x="452" y="584" width="175" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0g8nfjr_di" bpmnElement="TextAnnotation_0g8nfjr">
+        <dc:Bounds x="463" y="361" width="271.24569707401037" height="80.89500860585198" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0t2ro7i_di" bpmnElement="BoundaryEvent_03ehpqk">
+        <dc:Bounds x="379" y="318" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_11ky1pk_di" bpmnElement="Association_11ky1pk">
+        <di:waypoint x="380" y="341" />
+        <di:waypoint x="341" y="351" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0mxb8h1_di" bpmnElement="Association_0mxb8h1">
+        <di:waypoint x="416" y="256" />
+        <di:waypoint x="452" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1tu1u7n_di" bpmnElement="Association_1tu1u7n">
+        <di:waypoint x="244" y="279" />
+        <di:waypoint x="232" y="249" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_11fue8z_di" bpmnElement="Association_11fue8z">
+        <di:waypoint x="347" y="505" />
+        <di:waypoint x="312" y="513" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0bzkdlp_di" bpmnElement="Association_0bzkdlp">
+        <di:waypoint x="415" y="612" />
+        <di:waypoint x="452" y="612" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_07829sa_di" bpmnElement="Association_07829sa">
+        <di:waypoint x="447" y="322" />
+        <di:waypoint x="522" y="361" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0g4o5ls_di" bpmnElement="Association_0g4o5ls">
+        <di:waypoint x="447" y="472" />
+        <di:waypoint x="511" y="442" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1l432ts" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="poc-flow-with-gateway" name="POC Flow with Gateway" isExecutable="true" camunda:versionTag="1">
+    <bpmn:startEvent id="start-poc-flow-1" name="Start POC FLow 1">
+      <bpmn:outgoing>Flow_16ux4ew</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="add_patient_demographics" name="Add Patient Demographics" camunda:formKey="patient_demo_form">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="patient_first_name" label="First Name" type="string">
+            <camunda:properties>
+              <camunda:property id="patient_first_name" />
+            </camunda:properties>
+          </camunda:formField>
+          <camunda:formField id="patient_last_name" label="Last Name" type="string">
+            <camunda:properties>
+              <camunda:property id="last_nm" />
+            </camunda:properties>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="site_name" />
+          <camunda:outputParameter name="patient_first_name">${first_name}</camunda:outputParameter>
+          <camunda:outputParameter name="patient_last_name">${last_name}</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:properties>
+          <camunda:property name="test_property" value="1234" />
+        </camunda:properties>
+        <camunda:executionListener class="com.vineti.camundajavapoc.listener.PatientCreatedListener" event="start" />
+        <camunda:taskListener class="com.vineti.camundajavapoc.listener.PatientCreateStartedListener" event="create" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_16ux4ew</bpmn:incoming>
+      <bpmn:outgoing>Flow_11ywtp7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_16ux4ew" sourceRef="start-poc-flow-1" targetRef="add_patient_demographics" />
+    <bpmn:sequenceFlow id="Flow_11ywtp7" sourceRef="add_patient_demographics" targetRef="create_order" />
+    <bpmn:userTask id="create_order" name="Create Order">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="order_location">${order_location}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11ywtp7</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qccyvp</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="order_creation_complete" name="Order Creation Complete">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="patient_last_name">${patient_last_name}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1vi0bv2</bpmn:incoming>
+      <bpmn:incoming>Flow_06iwnm5</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0dhn8hf" messageRef="Message_18lhzrt" camunda:class="com.vineti.camundajavapoc.message.OrderCreationCompleteMessage" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="order_cancelled" name="Order Cancelled" camunda:asyncBefore="true" camunda:asyncAfter="true">
+      <bpmn:incoming>Flow_1jbmi3z</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1rei35i" messageRef="Message_087u2jb" camunda:class="com.vineti.camundajavapoc.message.OrderCreationCanceledMessage" />
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="user_canceled_order" name="Order Cancelled Event" attachedToRef="create_order">
+      <bpmn:outgoing>Flow_1jbmi3z</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0s6jh4x" messageRef="Message_00grshd" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1jbmi3z" sourceRef="user_canceled_order" targetRef="order_cancelled" />
+    <bpmn:sequenceFlow id="Flow_1qccyvp" sourceRef="create_order" targetRef="order_location_decision" />
+    <bpmn:exclusiveGateway id="order_location_decision" name="Order Location">
+      <bpmn:incoming>Flow_1qccyvp</bpmn:incoming>
+      <bpmn:outgoing>order_to_us</bpmn:outgoing>
+      <bpmn:outgoing>order_in_europe</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="order_to_us" name="Send order to US" sourceRef="order_location_decision" targetRef="send_order_to_us">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${order_location.toUpperCase().equals("US")}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="order_in_europe" name="Send Order to Europe" sourceRef="order_location_decision" targetRef="send_order_to_europe">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${order_location.toUpperCase().equals( "EUROPE")}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1vi0bv2" sourceRef="send_order_to_us" targetRef="order_creation_complete" />
+    <bpmn:sequenceFlow id="Flow_06iwnm5" sourceRef="send_order_to_europe" targetRef="order_creation_complete" />
+    <bpmn:userTask id="send_order_to_us" name="Send Order to US">
+      <bpmn:incoming>order_to_us</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vi0bv2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="send_order_to_europe" name="Send Order to Europe">
+      <bpmn:incoming>order_in_europe</bpmn:incoming>
+      <bpmn:outgoing>Flow_06iwnm5</bpmn:outgoing>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmn:message id="Message_18lhzrt" name="order_creation_complete" />
+  <bpmn:message id="Message_087u2jb" name="order_creation_cancelled" />
+  <bpmn:message id="Message_00grshd" name="user_canceled_order" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="poc-flow-with-gateway">
+      <bpmndi:BPMNEdge id="Flow_06iwnm5_di" bpmnElement="Flow_06iwnm5">
+        <di:waypoint x="1100" y="310" />
+        <di:waypoint x="1246" y="310" />
+        <di:waypoint x="1246" y="237" />
+        <di:waypoint x="1392" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vi0bv2_di" bpmnElement="Flow_1vi0bv2">
+        <di:waypoint x="1100" y="120" />
+        <di:waypoint x="1246" y="120" />
+        <di:waypoint x="1246" y="237" />
+        <di:waypoint x="1392" y="237" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qt8has_di" bpmnElement="order_in_europe">
+        <di:waypoint x="860" y="222" />
+        <di:waypoint x="860" y="310" />
+        <di:waypoint x="1000" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="840" y="263" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kxd8ik_di" bpmnElement="order_to_us">
+        <di:waypoint x="860" y="172" />
+        <di:waypoint x="860" y="120" />
+        <di:waypoint x="1000" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="833" y="143" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qccyvp_di" bpmnElement="Flow_1qccyvp">
+        <di:waypoint x="690" y="197" />
+        <di:waypoint x="835" y="197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jbmi3z_di" bpmnElement="Flow_1jbmi3z">
+        <di:waypoint x="660" y="255" />
+        <di:waypoint x="660" y="440" />
+        <di:waypoint x="792" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11ywtp7_di" bpmnElement="Flow_11ywtp7">
+        <di:waypoint x="450" y="197" />
+        <di:waypoint x="590" y="197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16ux4ew_di" bpmnElement="Flow_16ux4ew">
+        <di:waypoint x="215" y="197" />
+        <di:waypoint x="350" y="197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start-poc-flow-1">
+        <dc:Bounds x="179" y="179" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="152" y="222" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0awpv2m_di" bpmnElement="add_patient_demographics">
+        <dc:Bounds x="350" y="157" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rvonxe_di" bpmnElement="create_order">
+        <dc:Bounds x="590" y="157" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1hhwpnp_di" bpmnElement="order_creation_complete">
+        <dc:Bounds x="1392" y="219" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1374" y="262" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0xfhje0_di" bpmnElement="order_cancelled">
+        <dc:Bounds x="792" y="422" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="465" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0mxcvt2_di" bpmnElement="order_location_decision" isMarkerVisible="true">
+        <dc:Bounds x="835" y="172" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="895" y="190" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11qsxms_di" bpmnElement="send_order_to_us">
+        <dc:Bounds x="1000" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1w5t2vp_di" bpmnElement="send_order_to_europe">
+        <dc:Bounds x="1000" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0dr3itg_di" bpmnElement="user_canceled_order">
+        <dc:Bounds x="642" y="219" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="620" y="262" width="81" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

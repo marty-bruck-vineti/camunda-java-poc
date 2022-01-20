@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0wswpd5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="jms_event_test" name="JMS Event Test" isExecutable="true">
+    <bpmn:extensionElements>
+      <camunda:executionListener class="com.vineti.camundajavapoc.message.JmsWorkflowMessageAdapter" event="start" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="start_message_test" name="Start Message Test">
+      <bpmn:outgoing>Flow_1q0n27x</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:intermediateThrowEvent id="end_message" name="End Event">
+      <bpmn:extensionElements>
+        <camunda:executionListener class="com.vineti.camundajavapoc.message.JmsWorkflowMessageAdapter" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0tidx4w</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_1q0n27x" sourceRef="start_message_test" targetRef="submit_order" />
+    <bpmn:userTask id="submit_order" name="Submit Order">
+      <bpmn:incoming>Flow_1q0n27x</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tidx4w</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0tidx4w" sourceRef="submit_order" targetRef="end_message" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="jms_event_test">
+      <bpmndi:BPMNEdge id="Flow_1q0n27x_di" bpmnElement="Flow_1q0n27x">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="280" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tidx4w_di" bpmnElement="Flow_0tidx4w">
+        <di:waypoint x="380" y="97" />
+        <di:waypoint x="452" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start_message_test">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="162" y="122" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dw6586_di" bpmnElement="end_message">
+        <dc:Bounds x="452" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="122" width="51" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10j4sl0_di" bpmnElement="submit_order">
+        <dc:Bounds x="280" y="57" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
