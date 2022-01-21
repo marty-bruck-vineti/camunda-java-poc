@@ -31,7 +31,8 @@ RuntimeService runtimeService;
             String message = new String(byteData);
             TaskCompleteMessage completeMessage = mapper.readValue(message, TaskCompleteMessage.class);
             log.info("camunda task complete listener received message='{}'", message);
-            MessageCorrelationResult result = runtimeService.createMessageCorrelation(completeMessage.getCompletionEventName())
+            MessageCorrelationResult result = runtimeService.
+                    createMessageCorrelation(completeMessage.getCompletionEventName())
                     .processInstanceId(completeMessage.getProcessInstanceId())
                     .setVariables(completeMessage.getVariables())
                     .correlateWithResult();

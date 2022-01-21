@@ -93,6 +93,11 @@
             <version>${camunda.spring-boot.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.camunda.bpm.springboot</groupId>
+            <artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>
+            <version>${camunda.spring-boot.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.camunda.bpm</groupId>
             <artifactId>camunda-external-task-client</artifactId>
             <version>${camunda.external-task-client.version}</version>

@@ -23,7 +23,11 @@ public class BpmnProcessDefinitionService {
 
     public List<ProcessDefinitionDto> findAll() {
         List<ProcessDefinitionDto> processDefinitions = new ArrayList<>();
-        List<ProcessDefinition> processes = repositoryService.createProcessDefinitionQuery().active().latestVersion().list();
+        List<ProcessDefinition> processes = repositoryService.
+                createProcessDefinitionQuery()
+                    .active()
+                    .latestVersion()
+                    .list();
         processes.forEach( p -> {
             ProcessDefinitionDto dto = new ProcessDefinitionDto();
             dto.setId(p.getId());

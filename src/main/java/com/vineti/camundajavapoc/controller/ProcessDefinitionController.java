@@ -24,6 +24,10 @@ public class ProcessDefinitionController {
         this.bpmnProcessDefinitionService = bpmnProcessDefinitionService;
     }
 
+    /**
+     * Get a list of all process definitions
+     * @return - List of process Definitions @see - ProcessDefinitionDto
+     */
     @GetMapping(path="/")
     public ResponseEntity<List<ProcessDefinitionDto>> getAll(
 //            @RequestParam(required = false, name = "page", defaultValue = "0") int page,
