@@ -6,7 +6,7 @@ This project implements a SpringBoot wrapper around the Camunda Service. It prov
 - Unit tests that exercise the features and test workflows used in the POC
 
 ## Running the Demo
-To start the Service, just run:
+To start the Service, first make sure an activemq broker is running locally, then run:
 
 `./mvnw spring-boot:run`
 
