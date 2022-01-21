@@ -1,27 +1,24 @@
 package com.vineti.camundajavapoc.service;
 
+import com.mchange.v1.util.ListUtils;
 import com.vineti.camundajavapoc.dto.ProcessInstanceDto;
 import com.vineti.camundajavapoc.dto.TaskDto;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.*;
-import org.camunda.bpm.engine.exception.NullValueException;
-import org.camunda.bpm.engine.history.HistoricActivityInstance;
-import org.camunda.bpm.engine.history.HistoricVariableInstance;
 import org.camunda.bpm.engine.runtime.MessageCorrelationResult;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.impl.instance.FlowNodeImpl;
-import org.camunda.bpm.model.bpmn.impl.instance.TaskImpl;
-import org.camunda.bpm.model.bpmn.instance.Event;
+import org.camunda.bpm.model.bpmn.instance.FlowNode;
+import org.glassfish.jersey.internal.guava.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.CollectionUtils;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
-import java.util.concurrent.Flow;
 
 @Service
 @Slf4j
@@ -144,9 +141,13 @@ public class BpmnProcessInstanceService {
         steps.add(new TaskDto(node.getId(), node.getName()));
 
         // get all previous nodes
-        node.getPreviousNodes()
-            .list()
-            .forEach(n -> steps.add(0, new TaskDto(n.getId(), n.getName())));
+        List<FlowNode> prevNodes = node.getPreviousNodes().list();
+        while (prevNodes.size() > 0) {
+            FlowNode prevNode = prevNodes.get(0);
+            steps.add(new TaskDto(prevNode.getId(), prevNode.getName()));
+            prevNodes = prevNode.getPreviousNodes().list();
+        }
+        Collections.reverse(steps);
         return steps;
 
     }
@@ -171,6 +172,6 @@ public class BpmnProcessInstanceService {
     }
 
     public void cancelProcessInstance(String processInstanceId) {
-        runtimeService.deleteProcessInstance(processInstanceId, "Process cancelled by user");
+        runtimeService.deleteProcessInstance(processInstanceId, "Process cancelled by user", true, true, true, true);
     }
 }
