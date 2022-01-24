@@ -7,6 +7,7 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.impl.instance.FlowNodeImpl;
 import org.camunda.bpm.model.bpmn.impl.instance.TaskImpl;
 import org.camunda.bpm.model.bpmn.instance.Event;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,12 +45,13 @@ public class CamundaRuntimeServiceTest {
         assertNotNull(newInstance);
     }
 
-    @Test
-    public void testGetForm() throws IOException {
-        InputStream fs = formService.getDeployedTaskForm("patient_demo_form");
-        String content =  fs.readAllBytes().toString();
-        log.info(content);
-    }
+//    @Test
+//    public void testGetForm() throws IOException {
+//        ProcessInstance newInstance = runtimeService.startProcessInstanceByKey("poc-flow-1");
+//        InputStream fs = formService.getDeployedTaskForm("add_patient_demographics");
+//        String content =  fs.readAllBytes().toString();
+//        log.info(content);
+//    }
     @Test
     public void testGetActiveTasksForProcess() {
         ProcessInstance newInstance = runtimeService.startProcessInstanceByKey("poc-flow-1");
@@ -75,6 +77,7 @@ public class CamundaRuntimeServiceTest {
         // complete the first task and move to the second
         Map<String, Object> patientDemographics = new HashMap<>();
         patientDemographics.put("last_name", "Alastname");
+        patientDemographics.put("first_name", "Afirstname");
         completeUserTask(activeTask.getId(), newInstance.getId(), patientDemographics);
 
         // verify that this is the second task and move to the third
@@ -105,6 +108,7 @@ public class CamundaRuntimeServiceTest {
         // complete the first task and move to the second
         Map<String, Object> patientDemographics = new HashMap<>();
         patientDemographics.put("last_name", "Alastname");
+        patientDemographics.put("first_name", "Afirstname");
         completeUserTask(activeTask.getId(), newInstance.getId(), patientDemographics);
 
         // verify that this is the second task
@@ -112,7 +116,7 @@ public class CamundaRuntimeServiceTest {
         verifyActiveTask(activeTask, "Create Order", newInstance);
         assertTrue(processInstanceActive(newInstance));
         // generate the order cancelled event to end the workflow
-        sendMessageToProcessInstance(newInstance, "user_cancelled_order");
+        sendMessageToProcessInstance(newInstance, "user_canceled_order");
 
         // verify processInstance complete
         assertFalse(processInstanceActive(newInstance));
@@ -131,6 +135,7 @@ public class CamundaRuntimeServiceTest {
         // complete the first task and move to the second
         Map<String, Object> patientDemographics = new HashMap<>();
         patientDemographics.put("last_name", "Alastname");
+        patientDemographics.put("first_name", "Afirstname");
         completeUserTask(activeTask.getId(), newInstance.getId(), patientDemographics);
 
         // verify that this is the second task
@@ -166,6 +171,7 @@ public class CamundaRuntimeServiceTest {
         // complete the first task and move to the second
         Map<String, Object> patientDemographics = new HashMap<>();
         patientDemographics.put("last_name", "Alastname");
+        patientDemographics.put("first_name", "Afirstname");
         completeUserTask(activeTask.getId(), newInstance.getId(), patientDemographics);
 
         // verify that this is the second task
